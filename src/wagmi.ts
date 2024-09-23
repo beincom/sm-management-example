@@ -1,21 +1,23 @@
 import { http, cookieStorage, createConfig, createStorage } from 'wagmi'
-import { sepolia } from 'wagmi/chains'
+import { arbitrumSepolia, sepolia } from 'wagmi/chains'
 import { coinbaseWallet, injected, walletConnect, metaMask, safe } from 'wagmi/connectors'
 
 export function getConfig() {
   return createConfig({
-    chains: [sepolia],
+    chains: [arbitrumSepolia],
     connectors: [
       injected(),
       coinbaseWallet(),
-      walletConnect({ projectId: process.env.NEXT_PUBLIC_WC_PROJECT_ID }),
+      metaMask(),
+      walletConnect({ projectId: process.env.NEXT_PUBLIC_WC_PROJECT_ID as string }),
     ],
     storage: createStorage({
       storage: cookieStorage,
     }),
     ssr: true,
     transports: {
-      [sepolia.id]: http(),
+      // [sepolia.id]: http(),
+      [arbitrumSepolia.id]: http(),
     },
   })
 }

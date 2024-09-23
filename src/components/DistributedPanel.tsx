@@ -104,7 +104,7 @@ const distributedPlan = [
         speedRate: BigInt("10"), // 30 / 10_000 = 0.3%
     }
 ]
-
+const scanAddress = 'https://sepolia.arbiscan.io/address/'
 export default function DistributedPanel() {
     const duration = BigInt(60*60*24*7); // 1 week
     const [plan, setPlan] = useState(distributedPlan)
@@ -126,7 +126,7 @@ export default function DistributedPanel() {
                     ...BicFactoryConfig,
                     functionName: 'computeProxyAddress',
                     args: [bicRedeemTokenImpl, pad(pool.unlockAddress, { size: 32 }) ],
-                    account: process.env.NEXT_PUBLIC_SETUP_ADDRESS as  `0x${string}`
+                    account: process.env.NEXT_PUBLIC_SETUP_ADDRESS  as  `0x${string}`
                 } as any)
                 pool.lockAddress = lockAddress
                 const lockCode = await client.getCode({address: lockAddress} as any)
@@ -161,10 +161,10 @@ export default function DistributedPanel() {
         }
 
         const bicBalance = await client.readContract({...BicTokenPaymasterConfig, functionName: 'balanceOf', args: [account.address]} as any)
-        // if(bicBalance < pool.total) {
-        //     alert('Insufficient BIC balance')
-        //     return
-        // }
+        if((bicBalance as bigint) < pool.total) {
+            alert('Insufficient BIC balance')
+            return
+        }
         const bicRedeemTokenImpl = await client.readContract({...BicRedeemFactoryConfig, functionName: 'bicRedeemImplementation'} as any)
         const startUnlockTime = process.env.NEXT_PUBLIC_START_POOL_TIME
         const initCode = encodeFunctionData({
@@ -215,14 +215,14 @@ export default function DistributedPanel() {
                 detail.type = 0
                 detail.totalAmount = await client.readContract({...BicRedeemTokenConfig(poolInfo.lockAddress), functionName: 'redeemTotalAmount'} as any)
                 detail.rate = await client.readContract({...BicRedeemTokenConfig(poolInfo.lockAddress), functionName: 'redeemRate'} as any)
-                detail.startTime = await client.readContract({...BicRedeemTokenConfig(poolInfo.lockAddress), functionName: 'start'}as any)
-                detail.endTime = await client.readContract({...BicRedeemTokenConfig(poolInfo.lockAddress), functionName: 'end'}as any)
-                detail.beneficiary = await client.readContract({...BicRedeemTokenConfig(poolInfo.lockAddress), functionName: 'beneficiary'}as any)
-                detail.redeemTime = await client.readContract({...BicRedeemTokenConfig(poolInfo.lockAddress), functionName: 'lastAtCurrentStack'}as any)
-                detail.totalRedeemTime = await client.readContract({...BicRedeemTokenConfig(poolInfo.lockAddress), functionName: 'maxRewardStacks'}as any)
-                detail.currentRedeemTime = await client.readContract({...BicRedeemTokenConfig(poolInfo.lockAddress), functionName: 'currentRewardStacks'}as any)
-                detail.amountPerRedeem = await client.readContract({...BicRedeemTokenConfig(poolInfo.lockAddress), functionName: 'amountPerDuration'}as any)
-                const releasable = await client.readContract({...BicRedeemTokenConfig(poolInfo.lockAddress), functionName: 'releasable'}as any)
+                detail.startTime = await client.readContract({...BicRedeemTokenConfig(poolInfo.lockAddress), functionName: 'start'} as any)
+                detail.endTime = await client.readContract({...BicRedeemTokenConfig(poolInfo.lockAddress), functionName: 'end'} as any)
+                detail.beneficiary = await client.readContract({...BicRedeemTokenConfig(poolInfo.lockAddress), functionName: 'beneficiary'} as any)
+                detail.redeemTime = await client.readContract({...BicRedeemTokenConfig(poolInfo.lockAddress), functionName: 'lastAtCurrentStack'} as any)
+                detail.totalRedeemTime = await client.readContract({...BicRedeemTokenConfig(poolInfo.lockAddress), functionName: 'maxRewardStacks'} as any)
+                detail.currentRedeemTime = await client.readContract({...BicRedeemTokenConfig(poolInfo.lockAddress), functionName: 'currentRewardStacks'} as any)
+                detail.amountPerRedeem = await client.readContract({...BicRedeemTokenConfig(poolInfo.lockAddress), functionName: 'amountPerDuration'} as any)
+                const releasable = await client.readContract({...BicRedeemTokenConfig(poolInfo.lockAddress), functionName: 'releasable'} as any)
                 detail.waitingAmount = releasable[0]
                 detail.waitingRedeemTime = releasable[1]
             }
@@ -280,11 +280,11 @@ export default function DistributedPanel() {
                     <td className="px-6 py-4">{e.pool}</td>
                     <td className="px-6 py-4">
                         {e.lockAddress ? <><a className="lnk-primary" target="_blank" rel="noopener noreferrer"
-                                              href={"https://sepolia.etherscan.io/address/" + e.lockAddress}>Locked</a>
+                                              href={scanAddress + e.lockAddress}>Locked</a>
                             <br/>
                             {e.unlockAddress &&
                                 <a className="lnk-primary" target="_blank" rel="noopener noreferrer"
-                                   href={"https://sepolia.etherscan.io/address/" + e.unlockAddress}>Unlocked</a>}</> : 'N/A'}
+                                   href={scanAddress + e.unlockAddress}>Unlocked</a>}</> : 'N/A'}
                     </td>
                     <td className="px-6 py-4">{e.lockAddress ? e.isDeployed ?
                             formatEther(e.lockAmount) :
